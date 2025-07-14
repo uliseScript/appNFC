@@ -3,7 +3,6 @@ package com.mycompany.nfcapp
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -50,6 +49,15 @@ class MainActivity : FlutterActivity() {
                     }
                 }
 
+                "verificarBluetooth" -> {
+                    val adapter = BluetoothAdapter.getDefaultAdapter()
+                    if (adapter != null && adapter.isEnabled) {
+                        result.success(true)
+                    } else {
+                        result.success(false)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         }
@@ -62,11 +70,6 @@ class MainActivity : FlutterActivity() {
             result.error("BT_ERROR", "Bluetooth no disponible o desactivado", null)
             return
         }
-
-        /*val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
-            putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
-        }
-        startActivity(discoverableIntent)*/
 
         Thread {
             try {
@@ -93,7 +96,6 @@ class MainActivity : FlutterActivity() {
                     } catch (e: Exception) {
                         println("Cliente desconectado o error: ${e.message}")
                     }
-
                     socket.close()
                     clientOutputStream = null
                     Handler(Looper.getMainLooper()).post {
