@@ -1,9 +1,16 @@
+// Automatic FlutterFlow imports
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom widget code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
 import 'index.dart';
 import '/custom_code/actions/index.dart';
 import '/flutter_flow/custom_functions.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 
@@ -52,8 +59,7 @@ class _BleServerWidgetState extends State<BleServerWidget> {
 
   Future<void> _verificarBluetooth() async {
     try {
-      final bool resultado =
-      await platform.invokeMethod('verificarBluetooth');
+      final bool resultado = await platform.invokeMethod('verificarBluetooth');
 
       if (resultado) {
         if (!_bluetoothActivo) {
@@ -71,7 +77,7 @@ class _BleServerWidgetState extends State<BleServerWidget> {
             _bluetoothActivo = false;
             _servidorIniciado = false;
             status =
-            '⚠️ Bluetooth está desactivado.\nActívalo para iniciar el servidor.';
+                '⚠️ Bluetooth está desactivado.\nActívalo para iniciar el servidor.';
           });
         }
       }

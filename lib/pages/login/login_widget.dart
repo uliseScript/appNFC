@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:math';
 import 'dart:ui';
+import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -535,30 +536,158 @@ class _LoginWidgetState extends State<LoginWidget>
                                             ? null
                                             : () async {
                                                 var _shouldSetState = false;
-                                                FFAppState().userName = _model
-                                                    .emailAddressTextController
-                                                    .text;
-                                                FFAppState().password = _model
-                                                    .passwordTextController
-                                                    .text;
-                                                safeSetState(() {});
-                                                _model.apiResultwfg =
-                                                    await UdlapGroup.loginCall
-                                                        .call(
-                                                  username:
-                                                      FFAppState().userName,
-                                                  password:
-                                                      FFAppState().password,
-                                                );
-
+                                                _model.hasInternet =
+                                                    await actions
+                                                        .checkInternet();
                                                 _shouldSetState = true;
-                                                if ((_model.apiResultwfg
-                                                        ?.succeeded ??
-                                                    true)) {
+                                                if (_model.hasInternet!) {
+                                                  FFAppState().userName = _model
+                                                      .emailAddressTextController
+                                                      .text;
+                                                  FFAppState().password = _model
+                                                      .passwordTextController
+                                                      .text;
+                                                  safeSetState(() {});
+                                                  _model.apiResultwfg =
+                                                      await UdlapGroup.loginCall
+                                                          .call(
+                                                    username:
+                                                        FFAppState().userName,
+                                                    password:
+                                                        FFAppState().password,
+                                                  );
+
+                                                  _shouldSetState = true;
                                                   if ((_model.apiResultwfg
-                                                              ?.bodyText ??
-                                                          '') ==
-                                                      '-1') {
+                                                          ?.succeeded ??
+                                                      true)) {
+                                                    if ((_model.apiResultwfg
+                                                                ?.bodyText ??
+                                                            '') ==
+                                                        '-1') {
+                                                      await showDialog(
+                                                        context: context,
+                                                        builder:
+                                                            (dialogContext) {
+                                                          return Dialog(
+                                                            elevation: 0,
+                                                            insetPadding:
+                                                                EdgeInsets.zero,
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .transparent,
+                                                            alignment: AlignmentDirectional(
+                                                                    0.0, 0.0)
+                                                                .resolve(
+                                                                    Directionality.of(
+                                                                        context)),
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {
+                                                                FocusScope.of(
+                                                                        dialogContext)
+                                                                    .unfocus();
+                                                                FocusManager
+                                                                    .instance
+                                                                    .primaryFocus
+                                                                    ?.unfocus();
+                                                              },
+                                                              child:
+                                                                  MessageDialogErrorWidget(
+                                                                titleDialog:
+                                                                    FFLocalizations.of(
+                                                                            context)
+                                                                        .getText(
+                                                                  'mll1514q' /* User not found. */,
+                                                                ),
+                                                                bodyDialog:
+                                                                    FFLocalizations.of(
+                                                                            context)
+                                                                        .getText(
+                                                                  'fogn7sjp' /* Please verify your credentials... */,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+
+                                                      safeSetState(() {
+                                                        _model
+                                                            .emailAddressTextController
+                                                            ?.clear();
+                                                        _model
+                                                            .passwordTextController
+                                                            ?.clear();
+                                                      });
+                                                      if (_shouldSetState)
+                                                        safeSetState(() {});
+                                                      return;
+                                                    } else {
+                                                      await showDialog(
+                                                        context: context,
+                                                        builder:
+                                                            (dialogContext) {
+                                                          return Dialog(
+                                                            elevation: 0,
+                                                            insetPadding:
+                                                                EdgeInsets.zero,
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .transparent,
+                                                            alignment: AlignmentDirectional(
+                                                                    0.0, 0.0)
+                                                                .resolve(
+                                                                    Directionality.of(
+                                                                        context)),
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {
+                                                                FocusScope.of(
+                                                                        dialogContext)
+                                                                    .unfocus();
+                                                                FocusManager
+                                                                    .instance
+                                                                    .primaryFocus
+                                                                    ?.unfocus();
+                                                              },
+                                                              child:
+                                                                  MessageDialogWidget(
+                                                                titleDialog:
+                                                                    FFLocalizations.of(
+                                                                            context)
+                                                                        .getText(
+                                                                  '366r6des' /* Success. */,
+                                                                ),
+                                                                bodyDialog:
+                                                                    FFLocalizations.of(
+                                                                            context)
+                                                                        .getText(
+                                                                  'wjgzxg1o' /* Credentials entered correctly. */,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+
+                                                      context.pushNamed(
+                                                          HomePageWidget
+                                                              .routeName);
+
+                                                      safeSetState(() {
+                                                        _model
+                                                            .emailAddressTextController
+                                                            ?.clear();
+                                                        _model
+                                                            .passwordTextController
+                                                            ?.clear();
+                                                      });
+                                                      if (_shouldSetState)
+                                                        safeSetState(() {});
+                                                      return;
+                                                    }
+                                                  } else {
                                                     await showDialog(
                                                       context: context,
                                                       builder: (dialogContext) {
@@ -591,13 +720,13 @@ class _LoginWidgetState extends State<LoginWidget>
                                                                   FFLocalizations.of(
                                                                           context)
                                                                       .getText(
-                                                                'mll1514q' /* User not found. */,
+                                                                'f5yuijrc' /* Error */,
                                                               ),
                                                               bodyDialog:
                                                                   FFLocalizations.of(
                                                                           context)
                                                                       .getText(
-                                                                'fogn7sjp' /* Please verify your credentials... */,
+                                                                '8bn0e5y5' /* API Error */,
                                                               ),
                                                             ),
                                                           ),
@@ -605,76 +734,6 @@ class _LoginWidgetState extends State<LoginWidget>
                                                       },
                                                     );
 
-                                                    safeSetState(() {
-                                                      _model
-                                                          .emailAddressTextController
-                                                          ?.clear();
-                                                      _model
-                                                          .passwordTextController
-                                                          ?.clear();
-                                                    });
-                                                    if (_shouldSetState)
-                                                      safeSetState(() {});
-                                                    return;
-                                                  } else {
-                                                    await showDialog(
-                                                      context: context,
-                                                      builder: (dialogContext) {
-                                                        return Dialog(
-                                                          elevation: 0,
-                                                          insetPadding:
-                                                              EdgeInsets.zero,
-                                                          backgroundColor:
-                                                              Colors
-                                                                  .transparent,
-                                                          alignment: AlignmentDirectional(
-                                                                  0.0, 0.0)
-                                                              .resolve(
-                                                                  Directionality.of(
-                                                                      context)),
-                                                          child:
-                                                              GestureDetector(
-                                                            onTap: () {
-                                                              FocusScope.of(
-                                                                      dialogContext)
-                                                                  .unfocus();
-                                                              FocusManager
-                                                                  .instance
-                                                                  .primaryFocus
-                                                                  ?.unfocus();
-                                                            },
-                                                            child:
-                                                                MessageDialogWidget(
-                                                              titleDialog:
-                                                                  FFLocalizations.of(
-                                                                          context)
-                                                                      .getText(
-                                                                '366r6des' /* Success. */,
-                                                              ),
-                                                              bodyDialog:
-                                                                  FFLocalizations.of(
-                                                                          context)
-                                                                      .getText(
-                                                                'wjgzxg1o' /* Credentials entered correctly. */,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    );
-
-                                                    context.pushNamed(
-                                                        HomePageWidget
-                                                            .routeName);
-
-                                                    safeSetState(() {
-                                                      _model
-                                                          .emailAddressTextController
-                                                          ?.clear();
-                                                      _model
-                                                          .passwordTextController
-                                                          ?.clear();
-                                                    });
                                                     if (_shouldSetState)
                                                       safeSetState(() {});
                                                     return;
@@ -711,23 +770,19 @@ class _LoginWidgetState extends State<LoginWidget>
                                                                 FFLocalizations.of(
                                                                         context)
                                                                     .getText(
-                                                              'f5yuijrc' /* Error */,
+                                                              'n1vpq70j' /* Internet Error */,
                                                             ),
                                                             bodyDialog:
                                                                 FFLocalizations.of(
                                                                         context)
                                                                     .getText(
-                                                              '8bn0e5y5' /* API Error */,
+                                                              'd5y4nna0' /* No connection, check your netw... */,
                                                             ),
                                                           ),
                                                         ),
                                                       );
                                                     },
                                                   );
-
-                                                  if (_shouldSetState)
-                                                    safeSetState(() {});
-                                                  return;
                                                 }
 
                                                 if (_shouldSetState)

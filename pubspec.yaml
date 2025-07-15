@@ -38,6 +38,7 @@ dependencies:
   equatable: 2.0.7
   flutter_animate: 4.5.0
   flutter_ble_peripheral: ^1.2.6
+  internet_connection_checker_plus: ^2.7.2
   flutter_cache_manager: 3.4.1
   font_awesome_flutter: 10.7.0
   from_css_color: 2.0.0
