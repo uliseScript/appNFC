@@ -28,6 +28,8 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   auto_size_text: 3.0.0
+  internet_connection_checker_plus: ^2.7.2
+  flutter_blue_plus: ^1.35.5
   bluetooth_classic: ^0.0.2
   cached_network_image: 3.4.1
   cached_network_image_platform_interface: 4.1.1

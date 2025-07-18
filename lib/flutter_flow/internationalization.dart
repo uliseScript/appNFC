@@ -237,6 +237,14 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'en': 'Login',
       'es': 'Acceso',
     },
+    'n1vpq70j': {
+      'en': 'Internet Error',
+      'es': 'Error de Internet',
+    },
+    'd5y4nna0': {
+      'en': 'No connection, check your network',
+      'es': 'Sin conexión, revisa tu red',
+    },
     'f5yuijrc': {
       'en': 'Error',
       'es': 'Error',

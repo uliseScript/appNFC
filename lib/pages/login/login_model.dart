@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:math';
 import 'dart:ui';
+import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'login_widget.dart' show LoginWidget;
 import 'package:easy_debounce/easy_debounce.dart';
@@ -34,6 +35,8 @@ class LoginModel extends FlutterFlowModel<LoginWidget> {
   TextEditingController? passwordTextController;
   late bool passwordVisibility;
   String? Function(BuildContext, String?)? passwordTextControllerValidator;
+  // Stores action output result for [Custom Action - checkInternet] action in Button widget.
+  bool? hasInternet;
   // Stores action output result for [Backend Call - API (Login)] action in Button widget.
   ApiCallResponse? apiResultwfg;
 
