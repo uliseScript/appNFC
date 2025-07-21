@@ -43,9 +43,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
     _model = createModel(context, () => HomePageModel());
 
     // On page load action.
-    /*SchedulerBinding.instance.addPostFrameCallback((_) async {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.instantTimer = InstantTimer.periodic(
-        duration: Duration(milliseconds: 30000),
+        duration: Duration(milliseconds: 60000),
         callback: (timer) async {
           FFAppState().uidNFC = '';
           FFAppState().contenidoHexNFC = '';
@@ -53,7 +53,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
         },
         startImmediately: true,
       );
-    });*/
+    });
 
     animationsMap.addAll({
       'columnOnPageLoadAnimation': AnimationInfo(
@@ -201,7 +201,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                 24.0, 0.0, 0.0, 0.0),
                             child: Text(
                               valueOrDefault<String>(
-                                _model.sLastname,
+                                UdlapGroup.loginCall.lastName(
+                                  columnLoginResponse.jsonBody,
+                                ),
                                 'N/A',
                               ),
                               style: FlutterFlowTheme.of(context)
@@ -269,7 +271,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                 24.0, 4.0, 0.0, 0.0),
                             child: Text(
                               valueOrDefault<String>(
-                                _model.sRole,
+                                UdlapGroup.loginCall.role(
+                                  columnLoginResponse.jsonBody,
+                                ),
                                 'N/A',
                               ),
                               style: FlutterFlowTheme.of(context)
@@ -507,6 +511,80 @@ class _HomePageWidgetState extends State<HomePageWidget>
                       ),
                     ),
                   ),
+                  Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(10.0, 15.0, 10.0, 0.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 6.0,
+                            color: Color(0xFFFA9165),
+                            offset: Offset(
+                              3.0,
+                              3.0,
+                            ),
+                            spreadRadius: 3.0,
+                          )
+                        ],
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                10.0, 0.0, 0.0, 0.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      5.0, 0.0, 0.0, 0.0),
+                                  child: Icon(
+                                    Icons.connect_without_contact,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    size: 40.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 15.0, 15.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 15.0, 0.0, 0.0),
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 90.0,
+                                        child: custom_widgets.BleServerWidget(
+                                          width: double.infinity,
+                                          height: 90.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   if (FFAppState().uidNFC != null && FFAppState().uidNFC != '')
                     Padding(
                       padding:
@@ -657,87 +735,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                                 .bodyMedium
                                                                 .fontStyle,
                                                       ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 15.0, 0.0, 0.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 6.0,
-                                    color: Color(0xFFFA9165),
-                                    offset: Offset(
-                                      3.0,
-                                      3.0,
-                                    ),
-                                    spreadRadius: 3.0,
-                                  )
-                                ],
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        10.0, 0.0, 0.0, 0.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  5.0, 0.0, 0.0, 0.0),
-                                          child: Icon(
-                                            Icons.connect_without_contact,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            size: 40.0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 15.0, 15.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      0.0, 15.0, 0.0, 0.0),
-                                              child: Container(
-                                                width: double.infinity,
-                                                height: 90.0,
-                                                child: custom_widgets
-                                                    .BleServerWidget(
-                                                  width: double.infinity,
-                                                  height: 90.0,
                                                 ),
                                               ),
                                             ),

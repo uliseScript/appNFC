@@ -11,7 +11,67 @@ import 'dart:typed_data';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 
-/*Future<void> escribirYLeerNdef(String texto) async {
+Future<void> escribirYLeerNdef(String texto) async {
+  final isAvailable = await NfcManager.instance.isAvailable();
+  if (!isAvailable) {
+    throw Exception('NFC no disponible en este dispositivo');
+  }
+
+  await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+    try {
+      final nfcA = NfcA.from(tag);
+      if (nfcA == null) throw Exception('El tag no soporta NFC-A');
+
+      int? numero;
+      if (texto.trim().toLowerCase().startsWith('0x')) {
+        numero = int.tryParse(texto.trim().substring(2), radix: 16);
+      } else {
+        numero = int.tryParse(texto.trim());
+      }
+
+      if (numero == null || numero < 100 || numero > 1000) {
+        throw Exception('Ingresa un número entre 100 y 1000');
+      }
+
+      //  byte bajo y byte alto
+      final page7Data = Uint8List(4);
+      page7Data[0] = numero & 0xFF; // byte bajo
+      page7Data[1] = (numero >> 8) & 0xFF; // byte alto
+
+      // Escribir en la página 7
+      final writePage7 = Uint8List.fromList([0xA2, 0x07, ...page7Data]);
+      await nfcA.transceive(data: writePage7);
+
+      // Leer la página 7
+      final readPage7 = Uint8List.fromList([0x30, 0x07]);
+      final response = await nfcA.transceive(data: readPage7);
+
+      final byteLsb = response[0];
+      final byteMsb = response[1];
+
+      final numeroCompleto = byteLsb + (byteMsb << 8);
+
+      final leidoDecimal = numeroCompleto.toString();
+      final leidoHex =
+          '0x${byteLsb.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+
+      FFAppState().update(() {
+        FFAppState().contenidoEscritoNFC = leidoDecimal;
+        FFAppState().contenidoHexNFC = leidoHex;
+        FFAppState().reiniciarLecturaNFC = true;
+      });
+
+      await NfcManager.instance.stopSession();
+    } catch (e) {
+      await NfcManager.instance.stopSession(errorMessage: e.toString());
+    }
+  });
+
+  return;
+}
+
+/*
+Future<void> escribirYLeerNdef(String texto) async {
   final isAvailable = await NfcManager.instance.isAvailable();
   if (!isAvailable) {
     throw Exception('NFC no disponible en este dispositivo');
@@ -61,115 +121,6 @@ import 'package:nfc_manager/platform_tags.dart';
 
   return;
 }*/
-/*
-Future<void> escribirYLeerNdef(String texto) async {
-  final isAvailable = await NfcManager.instance.isAvailable();
-  if (!isAvailable) {
-    throw Exception('NFC no disponible en este dispositivo');
-  }
-
-  await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-    try {
-      final nfcA = NfcA.from(tag);
-      if (nfcA == null) throw Exception('El tag no soporta NFC-A');
-
-      int? numero;
-      if (texto.trim().toLowerCase().startsWith('0x')) {
-        numero = int.tryParse(texto.trim().substring(2), radix: 16);
-      } else {
-        numero = int.tryParse(texto.trim());
-      }
-
-      if (numero == null || numero < 100 || numero > 1000) {
-        throw Exception('Ingresa un número entre 100 y 1000');
-      }
-
-      final page7Data = Uint8List(4);
-      page7Data[0] = numero & 0xFF; // byte bajo
-      page7Data[1] = (numero >> 8) & 0xFF; // byte alto
-
-      final writePage7 = Uint8List.fromList([0xA2, 0x07, ...page7Data]);
-      await nfcA.transceive(data: writePage7);
-
-      final readPage7 = Uint8List.fromList([0x30, 0x07]);
-      final response = await nfcA.transceive(data: readPage7);
-
-      final byteLeido = response[0];
-      final leidoDecimal = byteLeido.toString();
-      final leidoHex =
-          '0x${byteLeido.toRadixString(16).padLeft(2, '0').toUpperCase()}';
-
-      FFAppState().update(() {
-        FFAppState().contenidoEscritoNFC = leidoDecimal;
-        FFAppState().contenidoHexNFC = leidoHex;
-        FFAppState().reiniciarLecturaNFC = true;
-      });
-
-      await NfcManager.instance.stopSession();
-    } catch (e) {
-      await NfcManager.instance.stopSession(errorMessage: e.toString());
-    }
-  });
-
-  return;
-}*/
-Future<void> escribirYLeerNdef(String texto) async {
-  final isAvailable = await NfcManager.instance.isAvailable();
-  if (!isAvailable) {
-    throw Exception('NFC no disponible en este dispositivo');
-  }
-
-  await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-    try {
-      final nfcA = NfcA.from(tag);
-      if (nfcA == null) throw Exception('El tag no soporta NFC-A');
-
-      int? numero;
-      if (texto.trim().toLowerCase().startsWith('0x')) {
-        numero = int.tryParse(texto.trim().substring(2), radix: 16);
-      } else {
-        numero = int.tryParse(texto.trim());
-      }
-
-      if (numero == null || numero < 100 || numero > 1000) {
-        throw Exception('Ingresa un número entre 100 y 1000');
-      }
-
-      //  byte bajo y byte alto
-      final page7Data = Uint8List(4);
-      page7Data[0] = numero & 0xFF;         // byte bajo
-      page7Data[1] = (numero >> 8) & 0xFF;  // byte alto
-
-      // Escribir en la página 7
-      final writePage7 = Uint8List.fromList([0xA2, 0x07, ...page7Data]);
-      await nfcA.transceive(data: writePage7);
-
-      // Leer la página 7
-      final readPage7 = Uint8List.fromList([0x30, 0x07]);
-      final response = await nfcA.transceive(data: readPage7);
-
-      final byteLsb = response[0];
-      final byteMsb = response[1];
-
-      final numeroCompleto = byteLsb + (byteMsb << 8);
-
-      final leidoDecimal = numeroCompleto.toString();
-      final leidoHex = '0x${byteLsb.toRadixString(16).padLeft(2, '0').toUpperCase()}';
-
-      FFAppState().update(() {
-        FFAppState().contenidoEscritoNFC = leidoDecimal;
-        FFAppState().contenidoHexNFC = leidoHex;
-        FFAppState().reiniciarLecturaNFC = true;
-      });
-
-      await NfcManager.instance.stopSession();
-    } catch (e) {
-      await NfcManager.instance.stopSession(errorMessage: e.toString());
-    }
-  });
-
-  return;
-}
 
 // Future<void> escribirYLeerNdef(String texto) async {
 //   final isAvailable = await NfcManager.instance.isAvailable();

@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 
 import 'index.dart'; // Imports other custom widgets
 
+import 'index.dart'; // Imports other custom widgets
+
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 import 'package:flutter/services.dart';
@@ -122,70 +124,6 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     });
   }
 
-  /*Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
-    final info = <String, dynamic>{};
-
-    info['uid'] = _getTagUid(tag);
-    info['type'] = tag.data['type']?.toString() ?? 'Desconocido';
-    info['techList'] = tag.data['techList'] != null
-        ? (tag.data['techList'] as List).map((e) => e.toString()).join(', ')
-        : 'Desconocido';
-
-    final nfcA = NfcA.from(tag);
-    if (nfcA != null) {
-      info['techDetails'] = {
-        'Protocolo': 'NFC-A (ISO 14443-3A)',
-        'ATQA': nfcA.atqa != null
-            ? '0x${List<int>.from(nfcA.atqa).map((e) => e.toRadixString(16).padLeft(2, '0')).join()}'
-            : 'Desconocido',
-        'SAK': nfcA.sak != null
-            ? '0x${nfcA.sak.toRadixString(16).padLeft(2, '0')}'
-            : 'Desconocido',
-      };
-
-      try {
-        final response =
-            await nfcA.transceive(data: Uint8List.fromList([0x30, 0x07]));
-        final ascii = utf8.decode(response.sublist(0, 4)).trim();
-
-        final firstByte = response[0];
-        final decimal = firstByte.toString();
-        final hex =
-            '0x${firstByte.toRadixString(16).padLeft(2, '0').toUpperCase()}';
-
-
-        //Si algún día necesitas mostrar los 4 bytes como: 6a 00 00 00
-        // final hexFull = response.sublist(0, 4).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
-        // info['contenidoHexFull'] = hexFull;
-
-        info['contenidoAscii'] = ascii;
-        info['contenidoHex'] = hex;
-        info['contenidoDecimal'] = decimal;
-
-        info['ndefRecords'] = [
-          {
-            'Tipo': 'Manual',
-            'Contenido': ascii,
-            'Tamaño': '${ascii.length} bytes',
-          }
-        ];
-      } catch (e) {
-        info['ndefError'] = 'Error leyendo página 7: $e';
-      }
-
-      info['memoryInfo'] = {
-        'Tipo': 'NTAG215',
-        'Capacidad total': '540 bytes',
-        'Páginas': '135',
-        'Bytes por página': '4',
-        'Área de usuario': '504 bytes',
-        'Bloqueo': 'Configurable'
-      };
-    }
-
-    return info;
-  }*/
-
   Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
     final info = <String, dynamic>{};
 
@@ -209,10 +147,11 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
 
       try {
         final response =
-        await nfcA.transceive(data: Uint8List.fromList([0x30, 0x07]));
+            await nfcA.transceive(data: Uint8List.fromList([0x30, 0x07]));
 
         final byteLeido = response[0]; // ✅ Solo el primer byte
-        final hex = '0x${byteLeido.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+        final hex =
+            '0x${byteLeido.toRadixString(16).padLeft(2, '0').toUpperCase()}';
         final decimal = byteLeido.toString();
         final ascii = utf8.decode([byteLeido], allowMalformed: true).trim();
 
@@ -244,7 +183,6 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     return info;
   }
 
-
   String _getTagUid(NfcTag tag) {
     final nfcA = NfcA.from(tag);
     if (nfcA != null && nfcA.identifier.isNotEmpty) {
@@ -263,7 +201,6 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     details?.forEach((detail) => buffer.writeln('\n• $detail'));
     return buffer.toString();
   }
-
 
   String _formatTagInfo(Map<String, dynamic> info) {
     final buffer = StringBuffer();
@@ -336,6 +273,276 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     );
   }
 }
+
+/*// Automatic FlutterFlow imports
+
+import 'index.dart'; // Imports other custom widgets
+
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/platform_tags.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
+class NfcReaderWidget extends StatefulWidget {
+  const NfcReaderWidget({
+    super.key,
+    this.width,
+    this.height,
+  });
+
+  final double? width;
+  final double? height;
+
+  @override
+  State<NfcReaderWidget> createState() => _NfcReaderWidgetState();
+}
+
+class _NfcReaderWidgetState extends State<NfcReaderWidget> {
+  String tagInfo = 'Acerca un tag NFC para comenzar la lectura';
+  bool hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    FFAppState().addListener(_checkRestartNfc);
+    _startNfcListener();
+  }
+
+  @override
+  void dispose() {
+    FFAppState().removeListener(_checkRestartNfc);
+    NfcManager.instance.stopSession();
+    super.dispose();
+  }
+
+  void _checkRestartNfc() {
+    if (FFAppState().reiniciarLecturaNFC) {
+      FFAppState().update(() => FFAppState().reiniciarLecturaNFC = false);
+      _restartNfcListener();
+    }
+  }
+
+  void _restartNfcListener() async {
+    try {
+      await NfcManager.instance.stopSession();
+    } catch (_) {}
+    await Future.delayed(const Duration(milliseconds: 300));
+    _startNfcListener();
+  }
+
+  void _startNfcListener() async {
+    final isAvailable = await NfcManager.instance.isAvailable();
+    if (!isAvailable) {
+      setState(() {
+        hasError = true;
+        tagInfo = _formatError('NFC no disponible', [
+          '1. Verifica que tu dispositivo soporta NFC',
+          '2. Activa el NFC en ajustes del sistema',
+          '3. Otorga los permisos necesarios a la app'
+        ]);
+      });
+      return;
+    }
+
+    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      try {
+        final uid = _getTagUid(tag);
+        final info = await _readTagData(tag);
+        HapticFeedback.vibrate();
+
+        setState(() {
+          tagInfo = _formatTagInfo(info);
+          hasError = false;
+          FFAppState().update(() {
+            FFAppState().contenidoEscritoNFC = info['contenidoAscii'] ?? '';
+            FFAppState().contenidoHexNFC = info['contenidoHex'] ?? '';
+            FFAppState().contenidoDecimal = info['contenidoDecimal'] ?? '';
+            FFAppState().uidNFC = uid;
+            FFAppState().tipoNfc = info['memoryInfo']?['Tipo'] ?? '';
+            FFAppState().protocoloNFC = info['techDetails']?['Protocolo'] ?? '';
+            FFAppState().capacidadNFC =
+                info['memoryInfo']?['Capacidad total'] ?? '';
+            FFAppState().pagesNFC = info['memoryInfo']?['Páginas'] ?? '';
+            FFAppState().bytePageNFC =
+                info['memoryInfo']?['Bytes por página'] ?? '';
+            FFAppState().suppNdefNFC =
+                info['ndefInfo']?['Capacidad máxima'] ?? '';
+            FFAppState().writingNdefNFC = info['ndefInfo']?['Escritura'] ?? '';
+            if (info['ndefRecords'] != null && info['ndefRecords'].isNotEmpty) {
+              final lastRecord = info['ndefRecords'].last;
+              FFAppState().recordTipoNFC = lastRecord['Tipo'] ?? '';
+              FFAppState().recordTamano = lastRecord['Tamaño'] ?? '';
+              FFAppState().recordContenidoNFC = lastRecord['Contenido'] ?? '';
+            } else {
+              FFAppState().recordTipoNFC = '';
+              FFAppState().recordTamano = '';
+              FFAppState().recordContenidoNFC = '';
+            }
+          });
+        });
+      } catch (e) {
+        setState(() {
+          tagInfo = _formatError('Error leyendo el tag: $e');
+          hasError = true;
+        });
+      }
+    });
+  }
+
+  Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
+    final info = <String, dynamic>{};
+
+    info['uid'] = _getTagUid(tag);
+    info['type'] = tag.data['type']?.toString() ?? 'Desconocido';
+    info['techList'] = tag.data['techList'] != null
+        ? (tag.data['techList'] as List).map((e) => e.toString()).join(', ')
+        : 'Desconocido';
+
+    final nfcA = NfcA.from(tag);
+    if (nfcA != null) {
+      info['techDetails'] = {
+        'Protocolo': 'NFC-A (ISO 14443-3A)',
+        'ATQA': nfcA.atqa != null
+            ? '0x${List<int>.from(nfcA.atqa).map((e) => e.toRadixString(16).padLeft(2, '0')).join()}'
+            : 'Desconocido',
+        'SAK': nfcA.sak != null
+            ? '0x${nfcA.sak.toRadixString(16).padLeft(2, '0')}'
+            : 'Desconocido',
+      };
+
+      try {
+        final response =
+            await nfcA.transceive(data: Uint8List.fromList([0x30, 0x07]));
+        final ascii = utf8.decode(response.sublist(0, 4)).trim();
+
+        final firstByte = response[0];
+        final hex =
+            '0x${firstByte.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+        final decimal = firstByte.toString();
+
+        // Si algún día necesitas mostrar los 4 bytes como: 6a 00 00 00
+        // final hexFull = response.sublist(0, 4).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+        // info['contenidoHexFull'] = hexFull;
+
+        info['contenidoAscii'] = ascii;
+        info['contenidoHex'] = hex;
+        info['contenidoDecimal'] = decimal;
+
+        info['ndefRecords'] = [
+          {
+            'Tipo': 'Manual',
+            'Contenido': ascii,
+            'Tamaño': '${ascii.length} bytes',
+          }
+        ];
+      } catch (e) {
+        info['ndefError'] = 'Error leyendo página 7: $e';
+      }
+
+      info['memoryInfo'] = {
+        'Tipo': 'NTAG215',
+        'Capacidad total': '540 bytes',
+        'Páginas': '135',
+        'Bytes por página': '4',
+        'Área de usuario': '504 bytes',
+        'Bloqueo': 'Configurable'
+      };
+    }
+
+    return info;
+  }
+
+  String _getTagUid(NfcTag tag) {
+    final nfcA = NfcA.from(tag);
+    if (nfcA != null && nfcA.identifier.isNotEmpty) {
+      return nfcA.identifier
+          .map((e) => e.toRadixString(16).padLeft(2, '0'))
+          .join(':')
+          .toUpperCase();
+    }
+    return 'No disponible';
+  }
+
+  String _formatError(String message, [List<String>? details]) {
+    final buffer = StringBuffer();
+    buffer.writeln('⚠️ $message');
+    buffer.writeln('━━━━━━━━━━━━━━━━━━');
+    details?.forEach((detail) => buffer.writeln('\n• $detail'));
+    return buffer.toString();
+  }
+
+  String _formatTagInfo(Map<String, dynamic> info) {
+    final buffer = StringBuffer();
+    buffer.writeln('🏷️ TAG NFC DETECTADO');
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━\n');
+    buffer.writeln('🆔 UID: ${info['uid']}');
+    buffer.writeln('📌 Tipo: ${info['type']}');
+    buffer.writeln('📡 Tecnologías: ${info['techList']}\n');
+
+    if (info['techDetails'] != null) {
+      buffer.writeln('🔧 DETALLES TÉCNICOS');
+      buffer.writeln('────────────────────');
+      (info['techDetails'] as Map<String, dynamic>)
+          .forEach((k, v) => buffer.writeln('$k: $v'));
+      buffer.writeln();
+    }
+    if (info['memoryInfo'] != null) {
+      buffer.writeln('💾 INFORMACIÓN DE MEMORIA');
+      buffer.writeln('────────────────────────');
+      (info['memoryInfo'] as Map<String, dynamic>)
+          .forEach((k, v) => buffer.writeln('$k: $v'));
+      buffer.writeln();
+    }
+    if (info['ndefRecords'] != null) {
+      buffer.writeln('📌 CONTENIDO MANUAL LEÍDO DE PÁGINA 7');
+      buffer.writeln('─────────────────────────────');
+      for (final record in info['ndefRecords']) {
+        buffer.writeln('\n• Tipo: ${record['Tipo']}');
+        buffer.writeln('• Tamaño: ${record['Tamaño']}');
+        buffer.writeln('• Contenido: ${record['Contenido']}');
+      }
+    } else if (info['ndefError'] != null) {
+      buffer.writeln('\n❌ Error leyendo contenido: ${info['ndefError']}');
+    } else {
+      buffer.writeln('\nℹ️ No se encontró contenido en página 7');
+    }
+
+    return buffer.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.width ?? double.infinity,
+      height: widget.height ?? 500,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        child: Text(
+          tagInfo,
+          style: TextStyle(
+            fontSize: 14,
+            color: hasError ? Colors.red[700] : Colors.black87,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
+  }
+}*/
+
 // class NfcReaderWidget extends StatefulWidget {
 //   const NfcReaderWidget({
 //     super.key,

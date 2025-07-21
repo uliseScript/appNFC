@@ -453,7 +453,6 @@ class MainActivity : FlutterActivity() {
     }
 }*/
 
-
 package com.mycompany.nfcapp
 
 import android.os.Bundle
@@ -657,7 +656,7 @@ class MainActivity : FlutterActivity() {
 
         Log.i("BLE", "📤 Notificado: ${data.joinToString(" ") { "0x%02X".format(it) }}")
 
-        // 🔊 Reproducir un tono cuando se notifica
+        // Reproducir un tono cuando se notifica
         try {
             val toneGen = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
             toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 150) // 150 ms
