@@ -122,7 +122,7 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     });
   }
 
-  Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
+  /*Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
     final info = <String, dynamic>{};
 
     info['uid'] = _getTagUid(tag);
@@ -149,11 +149,12 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
         final ascii = utf8.decode(response.sublist(0, 4)).trim();
 
         final firstByte = response[0];
+        final decimal = firstByte.toString();
         final hex =
             '0x${firstByte.toRadixString(16).padLeft(2, '0').toUpperCase()}';
-        final decimal = firstByte.toString();
 
-        // Si algún día necesitas mostrar los 4 bytes como: 6a 00 00 00
+
+        //Si algún día necesitas mostrar los 4 bytes como: 6a 00 00 00
         // final hexFull = response.sublist(0, 4).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
         // info['contenidoHexFull'] = hexFull;
 
@@ -183,7 +184,66 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     }
 
     return info;
+  }*/
+
+  Future<Map<String, dynamic>> _readTagData(NfcTag tag) async {
+    final info = <String, dynamic>{};
+
+    info['uid'] = _getTagUid(tag);
+    info['type'] = tag.data['type']?.toString() ?? 'Desconocido';
+    info['techList'] = tag.data['techList'] != null
+        ? (tag.data['techList'] as List).map((e) => e.toString()).join(', ')
+        : 'Desconocido';
+
+    final nfcA = NfcA.from(tag);
+    if (nfcA != null) {
+      info['techDetails'] = {
+        'Protocolo': 'NFC-A (ISO 14443-3A)',
+        'ATQA': nfcA.atqa != null
+            ? '0x${List<int>.from(nfcA.atqa).map((e) => e.toRadixString(16).padLeft(2, '0')).join()}'
+            : 'Desconocido',
+        'SAK': nfcA.sak != null
+            ? '0x${nfcA.sak.toRadixString(16).padLeft(2, '0')}'
+            : 'Desconocido',
+      };
+
+      try {
+        final response =
+        await nfcA.transceive(data: Uint8List.fromList([0x30, 0x07]));
+
+        final byteLeido = response[0]; // ✅ Solo el primer byte
+        final hex = '0x${byteLeido.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+        final decimal = byteLeido.toString();
+        final ascii = utf8.decode([byteLeido], allowMalformed: true).trim();
+
+        info['contenidoAscii'] = ascii;
+        info['contenidoHex'] = hex;
+        info['contenidoDecimal'] = decimal;
+
+        info['ndefRecords'] = [
+          {
+            'Tipo': 'Manual',
+            'Contenido': ascii,
+            'Tamaño': '${ascii.length} bytes',
+          }
+        ];
+      } catch (e) {
+        info['ndefError'] = 'Error leyendo página 7: $e';
+      }
+
+      info['memoryInfo'] = {
+        'Tipo': 'NTAG215',
+        'Capacidad total': '540 bytes',
+        'Páginas': '135',
+        'Bytes por página': '4',
+        'Área de usuario': '504 bytes',
+        'Bloqueo': 'Configurable'
+      };
+    }
+
+    return info;
   }
+
 
   String _getTagUid(NfcTag tag) {
     final nfcA = NfcA.from(tag);
@@ -203,6 +263,7 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     details?.forEach((detail) => buffer.writeln('\n• $detail'));
     return buffer.toString();
   }
+
 
   String _formatTagInfo(Map<String, dynamic> info) {
     final buffer = StringBuffer();
@@ -226,6 +287,7 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
           .forEach((k, v) => buffer.writeln('$k: $v'));
       buffer.writeln();
     }
+
     if (info['ndefRecords'] != null) {
       buffer.writeln('📌 CONTENIDO MANUAL LEÍDO DE PÁGINA 7');
       buffer.writeln('─────────────────────────────');
@@ -274,7 +336,6 @@ class _NfcReaderWidgetState extends State<NfcReaderWidget> {
     );
   }
 }
-
 // class NfcReaderWidget extends StatefulWidget {
 //   const NfcReaderWidget({
 //     super.key,
